@@ -1,26 +1,71 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Header from './Components/Header';
+import Form from './Components/Form';
+import Resultado from './Components/Resultado'
+import axios from 'axios';
 
 class App extends Component {
+
+  state ={
+    monedas: [],
+    cotizacion:{},
+    monedaCotizada: ''
+  }
+
+    async componentDidMount(){
+        this.obtenerMonedas();
+    }
+obtenerMonedas = async () =>{
+  const url = `https://api.coinmarketcap.com/v2/ticker/`;
+
+  await axios.get(url)
+  .then(respuesta =>{
+    this.setState({
+      monedas: respuesta.data.data
+    })
+  })
+  .catch(error =>{
+    console.log(error)
+  }) 
+
+}
+
+obtenerValoresCrypto = async (monedas) =>{
+//console.log(monedas)
+const {moneda,crypto} = monedas;
+const url = `https://api.coinmarketcap.com/v2/ticker/${crypto}/?convert=${moneda}`;
+console.log(url);
+
+await axios.get(url)
+.then(respuesta => {
+  this.setState({
+    cotizacion: respuesta.data.data,
+    monedaCotizada: moneda
+  })
+})
+}
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+      <div className="container">
+        <Header
+          title='Cotizador de Crypto monedas'
+        />
+
+        <div className="row justify-content-center">
+            <div className= "col-md-6 bg-light pb-4 contenido-principal">
+              <Form
+              monedas= {this.state.monedas}
+              obtenerValoresCrypto = {this.obtenerValoresCrypto}
+              />
+              <Resultado
+                cotizacion = {this.state.cotizacion}
+              />
+            </div>
+        </div>
       </div>
+
+
     );
   }
 }
